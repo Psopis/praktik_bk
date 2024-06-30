@@ -3,13 +3,15 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-def my_orders_keyboard():
+def start_game_and_play(games):
     kb = InlineKeyboardBuilder()
-    kb.add(InlineKeyboardButton(
-        text="⚽Выберете матч",
-        web_app=WebAppInfo('https://<your_domain>')
+    kb.row(InlineKeyboardButton(
+        text="Играть",
+        web_app=WebAppInfo(url=f"https://muko3.github.io/?games={games}")
+
     )
     )
+
     return kb.as_markup()
 
 
@@ -29,17 +31,17 @@ class Profile_kb:
         kb = InlineKeyboardBuilder()
         kb.row(InlineKeyboardButton(
             text="Подписка на 1 месяц",
-            callback_data=f'subscribe_'
+            callback_data=f'sube_{1}'
         )
         )
         kb.row(InlineKeyboardButton(
             text="Подписка на 6 месяцев",
-            callback_data=f'subscribe_'
+            callback_data=f'sube_{6}'
         )
         )
         kb.row(InlineKeyboardButton(
             text="Подписка на 1 год",
-            callback_data=f'subscribe_'
+            callback_data=f'sube_{12}'
         )
         )
         kb.row(InlineKeyboardButton(
@@ -48,3 +50,46 @@ class Profile_kb:
         )
         )
         return kb.as_markup()
+
+
+class Games_choose:
+    @staticmethod
+    def choose_sport():
+        kb = InlineKeyboardBuilder()
+        kb.row(InlineKeyboardButton(
+            text="Футбол",
+            callback_data=f'sport_fut'
+        )
+        )
+        kb.row(InlineKeyboardButton(
+            text="Баскетбол",
+            callback_data=f'sport_bask'
+        )
+        )
+        # kb.row(InlineKeyboardButton(
+        #     text="Волейбол",
+        #     callback_data=f'sport_vol'
+        # )
+        # )
+        return kb.as_markup()
+
+
+def test():
+    kb = InlineKeyboardBuilder()
+    kb.row(InlineKeyboardButton(
+        text="Вчерашние матчи",
+        callback_data=f"yesterday_matches"
+    )
+    )
+    kb.row(InlineKeyboardButton(
+        text="Сегодняшние матчи",
+        callback_data=f'today_matches'
+    )
+    )
+    kb.row(InlineKeyboardButton(
+        text="Завтрашние матчи",
+        callback_data=f'tommorow_matches'
+    )
+    )
+
+    return kb.as_markup()
