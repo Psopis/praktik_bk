@@ -10,13 +10,11 @@ from infrastructure.database.setup import close_db, init_db
 from tgbot.config import load_config, Config
 from tgbot.handlers import routers_list
 
-from tgbot.middlewares.config import ConfigMiddleware
-from tgbot.services import broadcaster
 
 
 async def on_startup(bot: Bot, admin_ids: list[int]):
     await init_db()
-    await broadcaster.broadcast(bot, admin_ids, "Бот запущен")
+
 
 
 def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=None):
@@ -30,14 +28,9 @@ def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=Non
     :param session_pool: Optional session pool object for the database using SQLAlchemy.
     :return: None
     """
-    middleware_types = [
-        ConfigMiddleware(config),
-        # DatabaseMiddleware(session_pool),
-    ]
 
-    for middleware_type in middleware_types:
-        dp.message.outer_middleware(middleware_type)
-        dp.callback_query.outer_middleware(middleware_type)
+
+
 
 
 def setup_logging():

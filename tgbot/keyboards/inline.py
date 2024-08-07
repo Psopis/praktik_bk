@@ -16,6 +16,15 @@ class Profile_kb:
         )
         return kb.as_markup()
 
+    @staticmethod
+    def main_menu():
+        kb = InlineKeyboardBuilder()
+        kb.row(InlineKeyboardButton(
+            text="Сделать прогноз",
+            callback_data=f'main_start_prognoz'
+        )
+        )
+        return kb.as_markup()
 
 class Admin_kb:
     @staticmethod
