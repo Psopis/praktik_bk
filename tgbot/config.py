@@ -3,7 +3,13 @@ from typing import Optional
 
 from environs import Env
 
-
+position_one = 'Описание позиции 1'
+position_two = 'Описание позиции 2'
+position_three = 'Описание позиции 3'
+position_four = 'Описание позиции 4'
+position_five = 'Описание позиции 5'
+position_six = 'Описание позиции 6'
+position_seven = 'Предназначение: Ваша миссия жизни. То, что вы должны дать Миру, через какие энергии развивать любую свою деятельность. '
 @dataclass
 class DbConfig:
     """
@@ -31,26 +37,11 @@ class DbConfig:
     port: int = 5432
 
     # For SQLAlchemy
-    def construct_sqlalchemy_url(self, driver="asyncpg", host=None, port=None) -> str:
-        """
-        Constructs and returns a SQLAlchemy URL for this database configuration.
-        """
-        # TODO: If you're using SQLAlchemy, move the import to the top of the file!
-        from sqlalchemy.engine.url import URL
 
-        if not host:
-            host = self.host
-        if not port:
-            port = self.port
-        uri = URL.create(
-            drivername=f"postgresql+{driver}",
-            username=self.user,
-            password=self.password,
-            host=host,
-            port=port,
-            database=self.database,
-        )
-        return uri.render_as_string(hide_password=False)
+
+
+
+
 
     @staticmethod
     def from_env(env: Env):

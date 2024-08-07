@@ -7,6 +7,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery, LabeledPrice
 
 from infrastructure.database.db_working import UserWorking, AdminWorking
+from tgbot.config import position_one, position_two, position_three, position_five, position_seven
 
 from tgbot.keyboards.inline import Profile_kb, Admin_kb
 
@@ -72,11 +73,19 @@ class ProfileH:
         try:
             arkan = count_arkan(message.text)
             valid_date = time.strptime(message.text, '%d.%m.%Y')
-            await message.answer(text=f'Расчет на дату {message.text}\nПозиция 1: {arkan[0]}\n'
-                                      f'Позиция 2: {arkan[1]}\n'
-                                      f'Позиция 3: {arkan[2]}\n'
-                                      f'Позиция 5: {arkan[3]}\n'
-                                      f'Позиция 7: {arkan[4]}\n'
+            await message.answer(text=f'☯️ `Расчет на дату {message.text}`\n'
+                                      f'*Позиция 1:* {arkan[0]}\n'
+                                      f'_{position_one}_\n\n'
+
+                                      f'*Позиция 2:* {arkan[1]}\n'
+                                      f'_{position_two}_\n\n'
+                                      f'*Позиция 3:* {arkan[2]}\n'
+                                      f'_{position_three}_\n\n'
+                                      f'*Позиция 5:* {arkan[3]}\n'
+                                      f'_{position_five}_\n\n'
+                                      f'*Позиция 7:* {arkan[4]}\n'
+                                      f'_{position_seven}_\n\n'
+                                 , parse_mode="Markdown"
                                  )
             await UserWorking.set_born_date(message.from_user.id, message.text)
 
@@ -85,5 +94,3 @@ class ProfileH:
             await message.edit_text(
                 text="Произошла ошибка при выполнении расчетов. Пожалуйста, введите дату в формате 'ДД.ММ.ГГГГ'.")
             await state.set_state(Dates.date)
-        await message.answer(text=f"Приветсвую вас {message.from_user.username}.",
-                             reply_markup=Profile_kb.main_menu())
