@@ -1,95 +1,52 @@
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
-
-def start_game_and_play(games):
-    kb = InlineKeyboardBuilder()
-    kb.row(InlineKeyboardButton(
-        text="Играть",
-        web_app=WebAppInfo(url=f"https://muko3.github.io/?games={games}")
-
-    )
-    )
-
-    return kb.as_markup()
+from aiogram.utils.keyboard import KeyboardButton, ReplyKeyboardBuilder
+from aiogram.types import ReplyKeyboardMarkup, WebAppInfo
 
 
 class Profile_kb:
     @staticmethod
-    def profiles_choose_some():
+    def count__arkan(date):
         kb = InlineKeyboardBuilder()
         kb.row(InlineKeyboardButton(
-            text="Приобрести подписку",
-            callback_data=f'get_subscribe'
+            text="Расчитать",
+            callback_data=f'arakan_{date}'
+        )
+        )
+        return kb.as_markup()
+
+
+class Admin_kb:
+    @staticmethod
+    def admins_start():
+        kb = InlineKeyboardBuilder()
+        kb.row(InlineKeyboardButton(
+            text="Сделать рассылку",
+            callback_data=f'send_distribution'
         )
         )
         return kb.as_markup()
 
     @staticmethod
-    def subscribes():
+    def agreement_to_send(type):
         kb = InlineKeyboardBuilder()
-        kb.row(InlineKeyboardButton(
-            text="Подписка на 1 месяц",
-            callback_data=f'sube_{1}'
+        kb.add(InlineKeyboardButton(
+            text="Да",
+            callback_data=f'agree_{type}'
         )
         )
-        kb.row(InlineKeyboardButton(
-            text="Подписка на 6 месяцев",
-            callback_data=f'sube_{6}'
-        )
-        )
-        kb.row(InlineKeyboardButton(
-            text="Подписка на 1 год",
-            callback_data=f'sube_{12}'
-        )
-        )
-        kb.row(InlineKeyboardButton(
-            text="Назад",
-            callback_data=f'back_in_profile'
+        kb.add(InlineKeyboardButton(
+            text="Нет",
+            callback_data=f'disagree'
         )
         )
         return kb.as_markup()
 
-
-class Games_choose:
     @staticmethod
-    def choose_sport():
-        kb = InlineKeyboardBuilder()
-        kb.row(InlineKeyboardButton(
-            text="Футбол",
-            callback_data=f'sport_fut'
-        )
-        )
-        kb.row(InlineKeyboardButton(
-            text="Баскетбол",
-            callback_data=f'sport_bask'
-        )
-        )
-        # kb.row(InlineKeyboardButton(
-        #     text="Волейбол",
-        #     callback_data=f'sport_vol'
-        # )
-        # )
-        return kb.as_markup()
-
-
-def test():
-    kb = InlineKeyboardBuilder()
-    kb.row(InlineKeyboardButton(
-        text="Вчерашние матчи",
-        callback_data=f"yesterday_matches"
-    )
-    )
-    kb.row(InlineKeyboardButton(
-        text="Сегодняшние матчи",
-        callback_data=f'today_matches'
-    )
-    )
-    kb.row(InlineKeyboardButton(
-        text="Завтрашние матчи",
-        callback_data=f'tommorow_matches'
-    )
-    )
-
-    return kb.as_markup()
+    def agreement_to_send_replay():
+        keyboard = ReplyKeyboardBuilder()
+        keyboard.button(text=r'ДА')
+        keyboard.button(text=r'НЕТ')
+        keyboard.adjust(2)
+        return keyboard.as_markup(resize_keyboard=True)

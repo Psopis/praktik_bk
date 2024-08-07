@@ -9,7 +9,7 @@ from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 from infrastructure.database.setup import close_db, init_db
 from tgbot.config import load_config, Config
 from tgbot.handlers import routers_list
-from tgbot.handlers.user import check_subs
+
 from tgbot.middlewares.config import ConfigMiddleware
 from tgbot.services import broadcaster
 
@@ -100,7 +100,7 @@ async def main():
     register_global_middlewares(dp, config)
 
     await on_startup(bot, config.tg_bot.admin_ids)
-    asyncio.create_task(check_subs(bot))
+
     await dp.start_polling(bot)
 
 

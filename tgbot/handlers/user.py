@@ -1,197 +1,89 @@
 import datetime
-
+import time
 from aiogram import Router, F
 from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery, LabeledPrice
 
-from infrastructure.database.db_working import UserWorking
-from infrastructure.parsers.all_matches_parsers import parser_all_matches_flashscore
-from tgbot.keyboards.inline import Profile_kb, Games_choose, start_game_and_play
-from tgbot.keyboards.reply import main_user_profile, webappstart
+from infrastructure.database.db_working import UserWorking, AdminWorking
+
+from tgbot.keyboards.inline import Profile_kb, Admin_kb
+
+
+def count_arkan(date):
+    day = date.split('.')[0]
+    month = date.split('.')[1]
+    year = date.split('.')[2]
+    new_day = 0
+    new_year = 0
+    if int(day) >= 23:
+        new_day = int(day) - 22
+    else:
+        new_day = int(day)
+    count_year = list(year)
+    for i in count_year:
+        new_year = int(i) + new_year
+    if new_year >= 23:
+        new_year = int(new_year) - 22
+    else:
+        new_year = int(new_year)
+    position_five = new_year + int(month)
+    position_seven = new_day + position_five
+    return new_day, int(month), new_year, position_five, position_seven
+
 
 user_router = Router()
 
 
+class Dates(StatesGroup):
+    date = State()
+    start_arkan = State()
+
+
 @user_router.message(CommandStart())
-async def user_start(message: Message):
-    await UserWorking.add_user(message.from_user.id, message.from_user.username)
-    await message.answer(f"Приветсвую вас {message.from_user.username}", reply_markup=main_user_profile())
+async def user_start(message: Message, state: FSMContext):
+    if message.from_user.id == 6998895854:
+        await AdminWorking.add_admin(message.from_user.id, message.from_user.username)
+        await message.answer(
+            f"Приветсвую вас админ {message.from_user.username}.", reply_markup=Admin_kb.admins_start()
+        )
+    else:
+        await UserWorking.add_user(message.from_user.id, message.from_user.username)
+        await message.answer(
+            f"Приветсвую вас {message.from_user.username}. \nНапишите свою дату рождения в формате дд.мм.гггг"
+        )
+        await state.set_state(Dates.date)
 
 
 class ProfileH:
     @staticmethod
-    @user_router.message(F.text == '🏡Профиль')
-    async def user_main_profile(message: Message):
-        user = await UserWorking.get_user(message.from_user.id)
-        text = f"""     👤 *Ваш профиль* `{user.name}`\n
-        *Идентификатор:* `{user.user_id}`\n
+    @user_router.message(Dates.date)
+    async def user_main_profile(message: Message, state: FSMContext):
 
-        📊 Ваша информация:
+        print(message.text)
+        try:
 
-        """
-
-        if user.subscribe:
-            text += f"*Последний день вашей подписки:* {user.last_day_subs}"
-        else:
-            text += '*Ваша подписка:* `Нету подписки`'
-        await message.answer(text=text, parse_mode='Markdown', reply_markup=Profile_kb.profiles_choose_some())
-
-    @staticmethod
-    @user_router.message(F.text == '📣Выбрать матчи')
-    async def user_main_profile(message: Message):
-
-        user = await UserWorking.get_user(message.from_user.id)
-        text = ''' Выберете спорт про который хотите узнать'''
-        await message.answer(text=text, parse_mode='Markdown', reply_markup=Games_choose.choose_sport())
+            valid_date = time.strptime(message.text, '%d.%m.%Y')
+            await message.answer(text=f'Расчет на дату {message.text}',
+                                 reply_markup=Profile_kb.count__arkan(message.text))
+            await UserWorking.set_born_date(message.from_user.id, message.text)
+        except ValueError:
+            await message.answer(
+                text="Произошла ошибка при выполнении расчетов. Пожалуйста, введите дату в формате 'ДД.ММ.ГГГГ'.")
+            await state.set_state(Dates.date)
 
     @staticmethod
-    @user_router.callback_query(F.data == 'get_subscribe')
-    async def back_in_main_profile(call: CallbackQuery):
-        await call.answer()
-        user = await UserWorking.get_user(call.from_user.id)
-
-        await call.message.edit_text(text='💸*Выберете тарифный план:*', parse_mode='Markdown',
-                                     reply_markup=Profile_kb.subscribes())
-
-    @staticmethod
-    @user_router.callback_query(F.data == 'back_in_profile')
-    async def back_in_main_profile(call: CallbackQuery):
-        await call.answer()
-        user = await UserWorking.get_user(call.from_user.id)
-        text = f"""     👤 *Ваш профиль* `{user.name}`\n
-               *Идентификатор:* `{user.user_id}`\n
-
-               📊 Ваша информация:
-
-               """
-        if user.subscribe:
-            text += f"*Последний день вашей подписки:* {user.last_day_subs}"
-        else:
-            text += '*Ваша подписка:* `Нету подписки`'
-        await call.message.edit_text(text=text, parse_mode='Markdown', reply_markup=Profile_kb.profiles_choose_some())
-
-
-class Subscribes:
-
-    @staticmethod
-    @user_router.callback_query(F.data.contains('sube_'))
-    async def back_in_main_profile(call: CallbackQuery):
+    @user_router.callback_query(F.data.contains('arakan_'))
+    async def choosing_neuro_to_txtimg(call: CallbackQuery, ):
         await call.answer()
         data = call.data.split('_')[1]
-
-        nums = 0
-        month = 0
-
-        if int(data) == 6:
-            nums = 500
-            month = 180
-            p = LabeledPrice(label='Подписка на 6 месяцев', amount=50000)
-        elif int(data) == 12:
-            nums = 900
-            month = 365
-            p = LabeledPrice(label='Подписка на 12 месяцев', amount=90000)
-        elif int(data) == 1:
-            nums = 100
-            month = 30
-            p = LabeledPrice(label='Подписка на 1 месяц', amount=10000)
-        text = f'''*Тариф:* на {month} дней
-*Стоимость:* {nums} 🇷🇺RUB
-*Срок действия:* {month} дней
-
-*Вы получите доступ к ресурсам Телеграм бота:*
-
-        '''
-        user = await UserWorking.get_user(call.from_user.id)
-        if user.subscribe:
-            await call.message.answer(text="У вас уже есть подписка")
-        else:
-            await UserWorking.set_sub(call.from_user.id, month)
-            await call.message.answer(text=text, parse_mode='Markdown')
-            await call.bot.send_invoice(
-                call.message.chat.id,
-                title='Подписка на бота',
-                description="Подписка",
-                provider_token='381764678:TEST:88850',
-                currency='rub',
-
-                is_flexible=False,  # True если конечная цена зависит от способа доставки
-                prices=[p],
-                start_parameter='bot_',
-                payload='some-invoice-payload-for-our-internal-use'
-            )
-
-
-class Games:
-
-    @staticmethod
-    @user_router.callback_query(F.data == 'sport_fut')
-    async def back_in_main_profile(call: CallbackQuery):
-        await call.answer()
-        user = await UserWorking.get_user(call.from_user.id)
-        arr = parser_all_matches_flashscore('f_1_0_7_ru-kz_1', 'fo_1_0_7_ru-kz_1_0')
-        array = ''
-        ch = 0
-        array_of_games = ''
-        # переделка массива чтобы проще было в js также звездочка в начале чтобы не было лишнего элемента
-
-        for i in arr.split('*'):
-            array += i + '*'
-            ch += 1
-            if ch == 30:
-                array_of_games = array
-
-        await call.message.answer(text='Чтобы посмотреть матчи по футболу нажмите кнопку',
-                                  parse_mode='Markdown',
-                                  reply_markup=start_game_and_play(str(array_of_games)))
-
-    @staticmethod
-    @user_router.callback_query(F.data == 'sport_bask')
-    async def back_in_main_profile(call: CallbackQuery):
-        await call.answer()
-        user = await UserWorking.get_user(call.from_user.id)
-        arr = parser_all_matches_flashscore('f_3_0_7_ru-kz_1', 'fo_3_0_7_ru-kz_1_0')
-        array = ''
-        ch = 0
-        array_of_games = ''
-        # переделка массива чтобы проще было в js также звездочка в начале чтобы не было лишнего элемента
-
-        for i in arr.split('*'):
-            array += i + '*'
-            ch += 1
-            if ch == 30:
-                array_of_games = array
-
-        await call.message.answer(text='Чтобы посмотреть матчи по баскетболу нажмите кнопку',
-                                  parse_mode='Markdown',
-                                  reply_markup=start_game_and_play(str(array_of_games)))
-
-    @staticmethod
-    @user_router.callback_query(F.data == 'sport_vol')
-    async def back_in_main_profile(call: CallbackQuery):
-        user = await UserWorking.get_user(call.from_user.id)
-        arr = parser_all_matches_flashscore('f_12_0_7_ru-kz_1', 'fo_12_0_7_ru-kz_1_0')
-        array = ''
-        ch = 0
-        array_of_games = ''
-        # переделка массива чтобы проще было в js также звездочка в начале чтобы не было лишнего элемента
-
-        for i in arr.split('*'):
-            array += i + '*'
-            ch += 1
-            if ch == 30:
-                array_of_games = array
-        await call.message.answer(text='Чтобы посмотреть матчи по волейболу нажмите кнопку',
-                                  parse_mode='Markdown',
-                                  reply_markup=start_game_and_play(str(array_of_games)))
-
-
-async def check_subs(bot):
-    users = await UserWorking.get_all_users_with_subs()
-    for user in users:
-        print('Проверка подписки людей')
-        print(user.last_day_subs)
-        print(datetime.datetime.today())
-        if user.last_day_subs <= datetime.datetime.today().date():
-            await UserWorking.set_subscribe_false(user.user_id)
-            await bot.send_message(text="У вас кончилась подписка❗❗❗\n💸Вы можете приобрести другой тариф:",
-                                   reply_markup=main_user_profile(), chat_id=user.user_id)
+        arkan = count_arkan(data)
+        await call.message.answer(text=f'Позиция 1: {arkan[0]}\n'
+                                       f'Позиция 2: {arkan[1]}\n'
+                                       f'Позиция 3: {arkan[2]}\n'
+                                       f'Позиция 5: {arkan[3]}\n'
+                                       f'Позиция 7: {arkan[4]}\n')
+        await call.message.answer(
+            f"Приветсвую вас {call.from_user.username}. \nНапишите свою дату рождения в формате дд.мм.гггг"
+        )

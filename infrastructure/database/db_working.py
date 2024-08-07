@@ -21,23 +21,15 @@ class UserWorking:
         return await User.get(user_id=user_id)
 
     @staticmethod
-    async def set_sub(user_id, days):
+    async def set_born_date(user_id, date):
         user = await User.get(user_id=user_id)
-        user.subscribe = True
-        user.last_day_subs = datetime.date.today() + datetime.timedelta(days=days)
+
+        user.date = date
         await user.save()
 
     @staticmethod
-    async def set_subscribe_false(user_id):
-        user = await User.get(user_id=user_id)
-        user.subscribe = False
-
-        await user.save()
-
-    @staticmethod
-    async def get_all_users_with_subs():
-
-        return await User.filter(subscribe=True)
+    async def get_all_user_id():
+        return await User.all()
 
 
 class AdminWorking:
@@ -46,14 +38,9 @@ class AdminWorking:
         return await User.filter(is_employee=True)
 
     @staticmethod
-    async def add_admin(user_id, username, time):
+    async def add_admin(user_id, username):
         try:
             return await User.get(user_id=user_id)
         except tortoise.exceptions.DoesNotExist:
 
-            await User.create(user_id=user_id, username=username, is_employee=True, date=time)
-
-    @staticmethod
-    async def check_admin(user_id):
-        user = await User.get(user_id=user_id)
-        return user.role_
+            await User.create(user_id=user_id, name=username, is_employee=True)
